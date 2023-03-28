@@ -119,12 +119,16 @@ type pp struct {
 	// goodArgNum records whether the most recent reordering directive was valid.
 	goodArgNum bool
 	// panicking is set by catchPanic to avoid infinite panic, recover, panic, ... recursion.
+	// panicking是通过catchPanic来设置的，用来防止无限递归的panic，recover，panic，...
 	panicking bool
 	// erroring is set when printing an error string to guard against calling handleMethods.
+	// erroring是当打印一个错误字符串时设置的，用来防止调用handleMethods
 	erroring bool
 	// wrapErrs is set when the format string may contain a %w verb.
+	// wrapErrs是当格式字符串可能包含%w时设置的
 	wrapErrs bool
 	// wrappedErr records the target of the %w verb.
+	// wrappedErr记录了%w的目标
 	wrappedErr error
 }
 
@@ -134,11 +138,18 @@ var ppFree = sync.Pool{
 
 // newPrinter allocates a new pp struct or grabs a cached one.
 func newPrinter() *pp {
+	// 从线程池中获取一个pp对象
 	p := ppFree.Get().(*pp)
+
+	// 初始化pp对象
 	p.panicking = false
 	p.erroring = false
 	p.wrapErrs = false
+
+	// 初始化pp.fmt对象
 	p.fmt.init(&p.buf)
+
+	// 返回pp对象
 	return p
 }
 
@@ -215,10 +226,15 @@ func Printf(format string, a ...any) (n int, err error) {
 
 // Sprintf formats according to a format specifier and returns the resulting string.
 func Sprintf(format string, a ...any) string {
+	// 构造一个pp对象
 	p := newPrinter()
+	// 执行打印
 	p.doPrintf(format, a)
+	// 获取打印结果
 	s := string(p.buf)
+	// 释放pp对象
 	p.free()
+	// 返回打印结果
 	return s
 }
 
@@ -972,10 +988,15 @@ func (p *pp) missingArg(verb rune) {
 }
 
 func (p *pp) doPrintf(format string, a []any) {
+	// 字符串长度
 	end := len(format)
-	argNum := 0         // we process one argument per non-trivial format
+	// 当前处理的参数
+	argNum := 0 // we process one argument per non-trivial format
+	// 上一个参数是否是索引
 	afterIndex := false // previous item in format was an index like [3].
+	// 是否已经处理过参数
 	p.reordered = false
+	// 格式化字符串循环
 formatLoop:
 	for i := 0; i < end; {
 		p.goodArgNum = true

@@ -56,7 +56,9 @@ func (f *fmt) clearflags() {
 }
 
 func (f *fmt) init(buf *buffer) {
+	// 是指向一个buffer的指针
 	f.buf = buf
+	// 清空所有的flag
 	f.clearflags()
 }
 
