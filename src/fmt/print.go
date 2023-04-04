@@ -78,6 +78,7 @@ func (b *buffer) write(p []byte) {
 	*b = append(*b, p...)
 }
 
+// 将字符串附加到buffer中
 func (b *buffer) writeString(s string) {
 	*b = append(*b, s...)
 }
@@ -647,15 +648,21 @@ func (p *pp) handleMethods(verb rune) (handled bool) {
 	return false
 }
 
+// printArg 是一个通用的打印函数，它会根据 verb 的类型来打印 arg 的值。
 func (p *pp) printArg(arg any, verb rune) {
 	p.arg = arg
 	p.value = reflect.Value{}
 
+	// 如果 arg 是 nil，那么我们需要特殊处理一下。
 	if arg == nil {
+		// 如果 verb 是 %T，那么我们需要打印出 arg 的类型。
 		switch verb {
 		case 'T', 'v':
+			// 如果是 %v，那么我们就打印出 nil。
 			p.fmt.padString(nilAngleString)
+		// 其他的 verb，我们就直接报错。
 		default:
+			//
 			p.badVerb(verb)
 		}
 		return
@@ -999,14 +1006,20 @@ func (p *pp) doPrintf(format string, a []any) {
 	// 格式化字符串循环
 formatLoop:
 	for i := 0; i < end; {
+		//
 		p.goodArgNum = true
+		// 上一个百分号处理参数后的位置
 		lasti := i
+		// 找到下一个%
 		for i < end && format[i] != '%' {
 			i++
 		}
+		// 如果找到了
 		if i > lasti {
+			// 处理后参数的字符串附加到buffer中
 			p.buf.writeString(format[lasti:i])
 		}
+		// 如果已经处理完了
 		if i >= end {
 			// done processing format string
 			break
@@ -1016,26 +1029,36 @@ formatLoop:
 		i++
 
 		// Do we have flags?
+		// 清理所有fmt的标志(暂时不知道什么作用)
 		p.fmt.clearflags()
 	simpleFormat:
+		// 处理简单的格式化
 		for ; i < end; i++ {
+			// 获取当前字符
 			c := format[i]
 			switch c {
+			// # 符号设置sharp为true
 			case '#':
 				p.fmt.sharp = true
+			// 0 符号设置zero为非minus
 			case '0':
 				p.fmt.zero = !p.fmt.minus // Only allow zero padding to the left.
+			// + 符号设置plus为true
 			case '+':
 				p.fmt.plus = true
+			// - 符号设置minus为true，并且zero为false
 			case '-':
 				p.fmt.minus = true
 				p.fmt.zero = false // Do not pad with zeros to the right.
+			// 空格设置space为true
 			case ' ':
 				p.fmt.space = true
 			default:
 				// Fast path for common case of ascii lower case simple verbs
 				// without precision or width or argument indices.
+				// 如果是小写字母，且参数没有超过a的长度，且不是索引
 				if 'a' <= c && c <= 'z' && argNum < len(a) {
+					// 如果是v，设置sharpV为sharp，sharp为false
 					if c == 'v' {
 						// Go syntax
 						p.fmt.sharpV = p.fmt.sharp
@@ -1044,9 +1067,13 @@ formatLoop:
 						p.fmt.plusV = p.fmt.plus
 						p.fmt.plus = false
 					}
+					// 打印参数
 					p.printArg(a[argNum], rune(c))
+					// 参数+1
 					argNum++
+					// 字符+1
 					i++
+					// 继续处理format
 					continue formatLoop
 				}
 				// Format is more complex than simple flags and a verb or is malformed.
