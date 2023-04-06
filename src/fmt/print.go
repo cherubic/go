@@ -344,6 +344,7 @@ func (p *pp) unknownType(v reflect.Value) {
 	p.buf.writeByte('?')
 }
 
+// badVerb 是一个错误处理函数，当格式化字符串中的格式化符号不合法时，会调用该函数
 func (p *pp) badVerb(verb rune) {
 	p.erroring = true
 	p.buf.writeString(percentBangString)
@@ -584,6 +585,7 @@ func (p *pp) catchPanic(arg any, verb rune, method string) {
 	}
 }
 
+// handleMethods传入verb，返回是否handled
 func (p *pp) handleMethods(verb rune) (handled bool) {
 	if p.erroring {
 		return
@@ -662,7 +664,6 @@ func (p *pp) printArg(arg any, verb rune) {
 			p.fmt.padString(nilAngleString)
 		// 其他的 verb，我们就直接报错。
 		default:
-			//
 			p.badVerb(verb)
 		}
 		return
@@ -670,6 +671,7 @@ func (p *pp) printArg(arg any, verb rune) {
 
 	// Special processing considerations.
 	// %T (the value's type) and %p (its address) are special; we always do them first.
+	// 如果 verb 是 %T 或者 %p，那么我们就直接打印出 arg 的类型或者地址。
 	switch verb {
 	case 'T':
 		p.fmt.fmtS(reflect.TypeOf(arg).String())
@@ -680,6 +682,7 @@ func (p *pp) printArg(arg any, verb rune) {
 	}
 
 	// Some types can be done without reflection.
+	// 如果 arg 是一个基本类型，那么我们就直接打印出来。
 	switch f := arg.(type) {
 	case bool:
 		p.fmtBool(f, verb)
@@ -717,9 +720,11 @@ func (p *pp) printArg(arg any, verb rune) {
 		p.fmtString(f, verb)
 	case []byte:
 		p.fmtBytes(f, verb, "[]byte")
+	// 如果 arg 是一个 reflect.Value，那么我们就直接打印出来。
 	case reflect.Value:
 		// Handle extractable values with special methods
 		// since printValue does not handle them at depth 0.
+		// 如果 printValue 不能处理，用特殊方法处理。
 		if f.IsValid() && f.CanInterface() {
 			p.arg = f.Interface()
 			if p.handleMethods(verb) {
@@ -1082,9 +1087,11 @@ formatLoop:
 		}
 
 		// Do we have an explicit argument index?
+		// 处理参数索引
 		argNum, i, afterIndex = p.argNumber(argNum, format, i, len(a))
 
 		// Do we have width?
+		// 处理宽度
 		if i < end && format[i] == '*' {
 			i++
 			p.fmt.wid, p.fmt.widPresent, argNum = intFromArg(a, argNum)

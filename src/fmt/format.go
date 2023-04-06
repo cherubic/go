@@ -108,7 +108,7 @@ func (f *fmt) pad(b []byte) {
 }
 
 // padString appends s to f.buf, padded on left (!f.minus) or right (f.minus).
-// padString是
+// padString是将s填充到f.buf中，左填充(!f.minus)或者右填充(f.minus)
 func (f *fmt) padString(s string) {
 	if !f.widPresent || f.wid == 0 {
 		f.buf.writeString(s)
