@@ -326,6 +326,7 @@ func (f *fmt) fmtInteger(u uint64, base int, isSigned bool, verb rune, digits st
 
 // truncateString truncates the string s to the specified precision, if present.
 func (f *fmt) truncateString(s string) string {
+	// 如果指定了精度，那么就截取字符串
 	if f.precPresent {
 		n := f.prec
 		for i := range s {
@@ -359,7 +360,9 @@ func (f *fmt) truncate(b []byte) []byte {
 
 // fmtS formats a string.
 func (f *fmt) fmtS(s string) {
+	// 截断字符串
 	s = f.truncateString(s)
+	// 附加字符串
 	f.padString(s)
 }
 

@@ -674,9 +674,11 @@ func (p *pp) printArg(arg any, verb rune) {
 	// 如果 verb 是 %T 或者 %p，那么我们就直接打印出 arg 的类型或者地址。
 	switch verb {
 	case 'T':
+		// 附加字符串
 		p.fmt.fmtS(reflect.TypeOf(arg).String())
 		return
 	case 'p':
+		// 附加字符串引用
 		p.fmtPointer(reflect.ValueOf(arg), 'p')
 		return
 	}
